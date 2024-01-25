@@ -8,12 +8,12 @@ def get_html(url:str):
     scraper = cloudscraper.CloudScraper()
     headers = {'Accept': 'text/html'}
     html = scraper.get(url,headers=headers)
-    time.sleep(2)
+    time.sleep(1)
     html = html.text
     soup = BeautifulSoup(html,"html.parser")
     return soup
 
-def find_categories(soup : BeautifulSoup):
+def existing_category(soup : BeautifulSoup):
     #return list of the broker industry
     value = []
     categories = soup.find_all("option")
@@ -29,6 +29,29 @@ def all_profile(url:str):
     soup = get_html(url)
     all_profiles = find_profiles(soup)
     return all_profiles
+
+def pair_profile_category(main_url:str):
+    all_profile_urls = all_profile(main_url)
+    profile_category = dict()
+
+    categories = existing_category(get_html(main_url))
+    categories.pop(0) #remove invalid result
+    for category in categories:
+        category_for_link = category.replace(" & ","+%26+").replace(" ","+").replace(" ","+")
+        url = f"{main_url}?wpv-wpcf-specialty={category_for_link}&wpv_aux_current_post_id=460514&wpv_aux_parent_post_id=460514&wpv_view_count=477752"
+        soup = get_html(url)
+        url_profiles = find_profiles(soup)
+        for urls in url_profiles:
+            if urls in profile_category:
+                profile_category[urls].append(category)
+            else:
+                profile_category[urls] = [category]
+    
+    #there are profile url that doesnt have any category
+    profile_uncategorized = list(set(all_profile_urls)-set(profile_category.keys()))
+    for profile in profile_uncategorized:
+        profile_category[profile] = ["Unknown"]
+    return profile_category    
 
 def find_profiles(soup : BeautifulSoup):
     #return list of profile urls for every category/industry
@@ -79,29 +102,7 @@ if __name__=="__main__":
     result = []
     main_url = "https://gabb.org/gabb-business-brokers/"
     
-    
-    #profile_category is a dictionary of profile url as key and list of category as value
-    #profile_uncategorized is list of profile url that not on any category
-    all_profile_urls = all_profile(main_url)
-    profile_category = dict()
-
-    categories = find_categories(get_html(main_url))
-    categories.pop(0) #remove invalid result
-    for category in categories:
-        category_for_link = category.replace(" & ","+%26+").replace(" ","+").replace(" ","+")
-        url = f"{main_url}?wpv-wpcf-specialty={category_for_link}&wpv_aux_current_post_id=460514&wpv_aux_parent_post_id=460514&wpv_view_count=477752"
-        soup = get_html(url)
-        url_profiles = find_profiles(soup)
-        for urls in url_profiles:
-            if urls in profile_category:
-                profile_category[urls].append(category)
-            else:
-                profile_category[urls] = [category]
-    
-    #adding uncategorized profile to profile_category
-    profile_uncategorized = list(set(all_profile_urls)-set(profile_category.keys()))
-    for profile in profile_uncategorized:
-        profile_category[profile] = ["Unknown"]
+    profile_category = pair_profile_category(main_url)
     
     #main program
     for profile in profile_category:
