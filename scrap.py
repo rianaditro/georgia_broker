@@ -1,8 +1,5 @@
-import cloudscraper
+import cloudscraper, re, time, pandas, typer
 from bs4 import BeautifulSoup
-import re
-import pandas
-import time
 
 def get_html(url:str):
     scraper = cloudscraper.CloudScraper()
