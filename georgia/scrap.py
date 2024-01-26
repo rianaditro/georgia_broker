@@ -1,4 +1,4 @@
-import cloudscraper, re, time, pandas, typer
+import cloudscraper, re, time, pandas
 from bs4 import BeautifulSoup
 
 def get_html(url:str):

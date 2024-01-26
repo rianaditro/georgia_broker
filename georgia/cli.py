@@ -2,7 +2,7 @@ import typer
 
 app = typer.Typer()
 
-from scrap import *
+from georgia.scrap import *
 
 @app.command()
 def generate_html(url):

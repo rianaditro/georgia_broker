@@ -1,4 +1,4 @@
-from cli import app
+from georgia.cli import app
 
 if __name__=="__main__":
     app()
