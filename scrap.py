@@ -7,8 +7,7 @@ def get_html(url:str):
     html = scraper.get(url,headers=headers)
     time.sleep(1)
     html = html.text
-    soup = BeautifulSoup(html,"html.parser")
-    return soup
+    return html
 
 def existing_category(soup : BeautifulSoup):
     #return list of the broker industry
@@ -23,20 +22,23 @@ def existing_category(soup : BeautifulSoup):
     return value
 
 def all_profile(url:str):
-    soup = get_html(url)
+    html = get_html(url)
+    soup = BeautifulSoup(html,"html.parser")
     all_profiles = find_profiles(soup)
     return all_profiles
 
 def pair_profile_category(main_url:str):
     all_profile_urls = all_profile(main_url)
     profile_category = dict()
-
-    categories = existing_category(get_html(main_url))
+    html = get_html(main_url)
+    soup = BeautifulSoup(html,"html.parser")
+    categories = existing_category(soup)
     categories.pop(0) #remove invalid result
     for category in categories:
         category_for_link = category.replace(" & ","+%26+").replace(" ","+").replace(" ","+")
         url = f"{main_url}?wpv-wpcf-specialty={category_for_link}&wpv_aux_current_post_id=460514&wpv_aux_parent_post_id=460514&wpv_view_count=477752"
-        soup = get_html(url)
+        html = get_html(url)
+        soup = BeautifulSoup(html,"html.parser")
         url_profiles = find_profiles(soup)
         for urls in url_profiles:
             if urls in profile_category:
@@ -105,7 +107,8 @@ if __name__=="__main__":
     for profile in profile_category:
         try:
             url = profile
-            soup = get_html(url)
+            html = get_html(url)
+            soup = BeautifulSoup(html,"html.parser")
             detail = get_details(soup)
             list_category = profile_category.get(profile)
             detail["Industry"]=";".join(list_category)
